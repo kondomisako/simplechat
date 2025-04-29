@@ -93,7 +93,7 @@ def lambda_handler(event, context):
         # 修正箇所
         url = 'https://93b5-34-142-170-226.ngrok-free.app/generate'
         payload = {
-                   "prompt": bedrock_messages,
+                   "prompt": message,
                    "max_new_tokens": 512,
                    "temperature": 0.7,
                    "top_p": 0.9,
@@ -102,6 +102,9 @@ def lambda_handler(event, context):
         headers = {
                     'Content-Type': 'application/json',
                     }
+        
+        print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
+
         req = urllib.request.Request(url, json.dumps(payload).encode(), headers)
         with urllib.request.urlopen(req) as res:
             response_body = json.load(res)

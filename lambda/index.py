@@ -4,6 +4,7 @@ import os
 import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
+import urllib.request
 
 
 # Lambda コンテキストからリージョンを抽出する関数
@@ -83,28 +84,46 @@ def lambda_handler(event, context):
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
         # invoke_model APIを呼び出し
-        response = bedrock_client.invoke_model(
-            modelId=MODEL_ID,
-            body=json.dumps(request_payload),
-            contentType="application/json"
-        )
-        
+        # response = bedrock_client.invoke_model(
+        #    modelId=FAST_API,
+        #    body=json.dumps(request_payload),
+        #    contentType="application/json"
+        #)
+
+        # 修正箇所
+        url = 'https://93b5-34-142-170-226.ngrok-free.app/generate'
+        payload = {
+                   "prompt": bedrock_messages,
+                   "max_new_tokens": 512,
+                   "temperature": 0.7,
+                   "top_p": 0.9,
+                   "do_sample": True
+                  }
+        headers = {
+                    'Content-Type': 'application/json',
+                    }
+        req = urllib.request.Request(url, json.dumps(payload).encode(), headers)
+        with urllib.request.urlopen(req) as res:
+            response_body = json.load(res)
+            
+    
         # レスポンスを解析
-        response_body = json.loads(response['body'].read())
+        # response_body = json.loads(response['body'].read())
         print("Bedrock response:", json.dumps(response_body, default=str))
         
         # 応答の検証
-        if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
-            raise Exception("No response content from the model")
+        #if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
+        #    raise Exception("No response content from the model")
         
         # アシスタントの応答を取得
-        assistant_response = response_body['output']['message']['content'][0]['text']
-        
+        #assistant_response = response_body['output']['message']['content'][0]['text']
+        assistant_response = response_body['generated_text']
+
         # アシスタントの応答を会話履歴に追加
-        messages.append({
-            "role": "assistant",
-            "content": assistant_response
-        })
+        #messages.append({
+        #    "role": "assistant",
+        #    "content": assistant_response
+        #})
         
         # 成功レスポンスの返却
         return {

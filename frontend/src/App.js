@@ -109,7 +109,7 @@ function ChatInterface({ signOut, user }) {
             会話をクリア
           </button>
           <button className="logout-button" onClick={signOut}>
-            ログアウト ({user.username})
+            ログアウト ({idToken})
           </button>
         </div>
       </header>
